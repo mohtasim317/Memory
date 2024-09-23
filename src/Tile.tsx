@@ -1,26 +1,36 @@
-import { useState } from "react";
+import { TileComponentType } from "./Types";
 
 export default function Tile({
-  color,
+  tileData: { color, matched, clicked },
   tileIndex,
   setSelectedTiles,
-}: {
-  color: string;
-  tileIndex: number;
-  setSelectedTiles: React.Dispatch<React.SetStateAction<number[]>>;
-}) {
-  const [tileClicked, setTileClicked] = useState(false);
-
+  selectedTiles,
+  updateInitialBoard,
+}: TileComponentType) {
   const onTileClick = () => {
-    setTileClicked(true);
+    if (
+      selectedTiles.length === 2 ||
+      selectedTiles.includes(tileIndex) ||
+      matched === true
+    )
+      return;
+    setSelectedTiles((prev) => {
+      if (!prev.includes(tileIndex)) {
+        return [...prev, tileIndex];
+      }
+      return prev;
+    });
+    updateInitialBoard(tileIndex, "clicked", true);
   };
-  // Write your code here.
 
   return (
     <>
       <div
         onClick={onTileClick}
-        className={tileClicked ? `tile ${color}` : "tile"}
+        className={
+          (clicked ? `tile ${color}` : "tile") ||
+          (matched ? `tile ${color}` : "tile")
+        }
       ></div>
     </>
   );

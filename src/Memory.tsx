@@ -41,39 +41,103 @@
 // <button>Restart</button>
 // Your component has already been rendered to the DOM inside of a <span>#root</span> div directly in the body with the CSS imported.
 
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import Tile from "./Tile";
+import { TileDataType } from "./Types";
 
 const TILE_COLORS = ["red", "green", "blue", "yellow"];
 
-export default function Memory() {
-  const [initialBoard, setInitialBoard] = useState(() => {
-    const initial: string[] = [];
-    TILE_COLORS.map((element) => {
-      initial.push(element, element);
-    });
-    shuffle(initial);
-    console.log(initial);
-    return initial;
+const generateBoard = () => {
+  const initial: TileDataType[] = [];
+
+  TILE_COLORS.map((element) => {
+    let tileObject = { color: element, matched: false, clicked: false };
+    initial.push(tileObject);
   });
 
+  TILE_COLORS.map((element) => {
+    let tileObject = { color: element, matched: false, clicked: false };
+    initial.push(tileObject);
+  });
+
+  shuffle(initial);
+  return initial;
+};
+
+export default function Memory() {
+  const [initialBoard, setInitialBoard] = useState<TileDataType[]>(
+    generateBoard()
+  );
   const [selectedTiles, setSelectedTiles] = useState<number[]>([]);
+  const [intialMessage, setInitialMessage] = useState<string>("Memory");
+
+  const updateInitialBoard = (
+    index: number,
+    field: "matched" | "clicked",
+    value: boolean
+  ): void => {
+    setInitialBoard((prev) => {
+      let copy = [...prev];
+      let currentTile = copy[index];
+      currentTile[field] = value;
+      return copy;
+    });
+  };
+
+  const restart = () => {
+    setInitialBoard(generateBoard());
+    setSelectedTiles([]);
+    setInitialMessage("Memory");
+  };
+
+  useEffect(() => {
+    if (
+      initialBoard.filter((ele) => {
+        return ele.matched === false;
+      }).length === 0
+    ) {
+      setInitialMessage("You Win!");
+    }
+  }, [initialBoard]);
+
+  useEffect(() => {
+    if (selectedTiles.length === 2) {
+      let first = selectedTiles[0];
+      let second = selectedTiles[1];
+      if (initialBoard[first].color === initialBoard[second].color) {
+        updateInitialBoard(first, "matched", true);
+        updateInitialBoard(second, "matched", true);
+        setSelectedTiles([]);
+      } else {
+        setTimeout(() => {
+          setSelectedTiles([]);
+          updateInitialBoard(first, "clicked", false);
+          updateInitialBoard(second, "clicked", false);
+        }, 1000);
+      }
+    }
+  }, [selectedTiles]);
 
   return (
     <>
-      <h1>Memory</h1>
+      <h1>{intialMessage}</h1>
       <div className="board">
-        {initialBoard.map((color, i) => {
+        {initialBoard.map((tileObject, i) => {
           return (
             <Tile
-              color={color}
+              key={tileObject.color + i}
+              tileData={tileObject}
               tileIndex={i}
               setSelectedTiles={setSelectedTiles}
+              selectedTiles={selectedTiles}
+              updateInitialBoard={updateInitialBoard}
             />
           );
         })}
       </div>
-      <button>Restart</button>
+      {intialMessage === "You Win!" && (
+        <button onClick={() => restart()}>Restart</button>
+      )}
     </>
   );
 }
@@ -82,7 +146,7 @@ export default function Memory() {
  * Returns the array shuffled into a random order.
  * Do not edit this function.
  */
-function shuffle(array: string[]) {
+function shuffle(array: TileDataType[]) {
   for (let i = array.length - 1; i > 0; i--) {
     const randomIndex = Math.floor(Math.random() * (i + 1));
 
