@@ -42,6 +42,7 @@
 // Your component has already been rendered to the DOM inside of a <span>#root</span> div directly in the body with the CSS imported.
 
 import React, { useState } from "react";
+import Tile from "./Tile";
 
 const TILE_COLORS = ["red", "green", "blue", "yellow"];
 
@@ -56,23 +57,21 @@ export default function Memory() {
     return initial;
   });
 
-  const [tileClicked, setTileClicked] = useState(false);
-
-  const onTileClick = () => {};
-  // Write your code here.
+  const [selectedTiles, setSelectedTiles] = useState<number[]>([]);
 
   return (
     <>
       <h1>Memory</h1>
       <div className="board">
-        <div className="tile "></div>
-        <div className="tile "></div>
-        <div className="tile "></div>
-        <div className="tile "></div>
-        <div className="tile "></div>
-        <div className="tile "></div>
-        <div className="tile "></div>
-        <div className="tile "></div>
+        {initialBoard.map((color, i) => {
+          return (
+            <Tile
+              color={color}
+              tileIndex={i}
+              setSelectedTiles={setSelectedTiles}
+            />
+          );
+        })}
       </div>
       <button>Restart</button>
     </>
